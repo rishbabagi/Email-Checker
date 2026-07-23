@@ -1,18 +1,37 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
-const links = [
+const baseLinks = [
   { href: "/", label: "Home" },
   { href: "/chatbot", label: "Check an email" },
-  { href: "/login", label: "Login" },
   { href: "/about", label: "About" },
 ];
 
 export default function NavMenu() {
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isAuthed, setIsAuthed] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    supabase.auth.getUser().then(({ data }) => {
+      setIsAuthed(!!data.user);
+    });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setIsAuthed(!!session);
+      }
+    );
+
+    return () => subscription.subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -23,6 +42,18 @@ export default function NavMenu() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setMenuOpen(false);
+    router.push("/login");
+    router.refresh();
+  };
+
+  const links = isAuthed
+    ? baseLinks
+    : [...baseLinks, { href: "/login", label: "Login" }];
 
   return (
     <div ref={menuRef} className="fixed right-6 top-6 z-50">
@@ -60,6 +91,14 @@ export default function NavMenu() {
               {link.label}
             </Link>
           ))}
+          {isAuthed && (
+            <button
+              onClick={handleLogout}
+              className="block w-full px-4 py-2.5 text-left text-sm text-slate-300 transition-colors hover:bg-slate-800 hover:text-emerald-400"
+            >
+              Log out
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -2,20 +2,34 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
     setIsLoading(true);
 
-    setTimeout(() => {
-      router.push("/chatbot");
-    }, 900);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setError(error.message);
+      setIsLoading(false);
+      return;
+    }
+
+    router.push("/chatbot");
+    router.refresh();
   };
 
   return (
@@ -147,6 +161,12 @@ export default function LoginPage() {
               Keep me signed in on this device
             </label>
 
+            {error && (
+              <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400">
+                {error}
+              </p>
+            )}
+
             <button
               type="submit"
               disabled={isLoading}
@@ -187,8 +207,11 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-xs text-slate-500">
           No account yet?{" "}
-          <a href="#" className="text-emerald-400 hover:text-emerald-300">
-            Request access
+          <a
+            href="/signup"
+            className="text-emerald-400 hover:text-emerald-300"
+          >
+            Create one
           </a>
         </p>
       </div>
