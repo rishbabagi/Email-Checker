@@ -86,9 +86,13 @@ body {
   border-top: none;
 }
 
-/* scroll-triggered scan-sweep reveal, driven by ScanReveal component */
+/* scroll-triggered scan-sweep reveal, driven by ScanReveal component.
+   overflow: hidden clips the .sweep gradient to these bounds — without it,
+   the sweep's resting position (translateY(-100%), above the panel) is
+   fully visible as a static gradient smear floating above the content. */
 .scan-reveal {
   position: relative;
+  overflow: hidden;
   opacity: 0;
   transform: translateY(10px);
   transition: opacity 0.5s ease, transform 0.5s ease;

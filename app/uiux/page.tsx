@@ -65,8 +65,15 @@ export default function UiUxPage() {
   const [demoOpen, setDemoOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-bg-base px-4 py-16 sm:px-8">
-      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-12 md:grid-cols-[180px_minmax(0,1fr)]">
+    <div className="relative min-h-screen overflow-hidden bg-bg-base px-4 py-16 sm:px-8 lg:py-24">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 flex items-start justify-center"
+      >
+        <div className="mt-[-10vmin] h-[60vmin] w-[60vmin] rounded-full bg-signal/10 blur-[120px]" />
+      </div>
+
+      <div className="relative mx-auto grid max-w-5xl grid-cols-1 gap-12 md:grid-cols-[180px_minmax(0,1fr)] lg:max-w-6xl">
         {/* Rail */}
         <nav className="hidden h-fit flex-col gap-1 md:sticky md:top-16 md:flex">
           <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.14em] text-mist-dim">

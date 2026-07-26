@@ -2,18 +2,25 @@ import ScanReveal from "../components/ScanReveal";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-bg-base px-4 py-16">
-      <div className="mx-auto flex max-w-2xl flex-col gap-8">
+    <div className="relative min-h-screen overflow-hidden bg-bg-base px-4 py-16 lg:py-24">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 flex items-start justify-center"
+      >
+        <div className="mt-[-10vmin] h-[60vmin] w-[60vmin] rounded-full bg-signal/10 blur-[120px]" />
+      </div>
+
+      <div className="relative mx-auto flex max-w-2xl flex-col gap-8 lg:max-w-3xl lg:gap-10">
         {/* Brand */}
         <div className="mb-4 flex flex-col items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center border border-circuit bg-bg-panel">
+          <div className="flex h-14 w-14 items-center justify-center border border-circuit bg-bg-panel lg:h-16 lg:w-16">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth={1.75}
-              className="h-7 w-7 text-signal"
+              className="h-7 w-7 text-signal lg:h-8 lg:w-8"
             >
               <path
                 strokeLinecap="round"
@@ -27,18 +34,18 @@ export default function AboutPage() {
               />
             </svg>
           </div>
-          <h1 className="font-display text-2xl font-bold uppercase tracking-tight text-mist">
+          <h1 className="font-display text-2xl font-bold uppercase tracking-tight text-mist lg:text-3xl">
             About Us
           </h1>
         </div>
 
         {/* About the project */}
         <ScanReveal>
-          <section className="scan-panel p-8">
-            <p className="mb-4 font-mono text-xs uppercase tracking-wider text-signal">
+          <section className="scan-panel p-8 lg:p-10">
+            <p className="mb-4 font-mono text-xs uppercase tracking-wider text-signal lg:text-sm">
               About PhishGuard
             </p>
-            <div className="flex flex-col gap-4 text-sm leading-relaxed text-mist-dim">
+            <div className="flex flex-col gap-4 text-sm leading-relaxed text-mist-dim lg:text-base">
               <p>
                 Phishing emails are getting harder to spot. Attackers spoof
                 trusted domains, mimic real companies, and use urgency to
@@ -65,15 +72,15 @@ export default function AboutPage() {
 
         {/* About the founder */}
         <ScanReveal>
-          <section className="scan-panel p-8">
-            <p className="mb-4 font-mono text-xs uppercase tracking-wider text-signal">
+          <section className="scan-panel p-8 lg:p-10">
+            <p className="mb-4 font-mono text-xs uppercase tracking-wider text-signal lg:text-sm">
               About the Founder
             </p>
-            <div className="flex items-start gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-circuit bg-bg-base text-xl font-semibold text-mist-dim">
+            <div className="flex items-start gap-4 lg:gap-5">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-circuit bg-bg-base text-xl font-semibold text-mist-dim lg:h-20 lg:w-20 lg:text-2xl">
                 ?
               </div>
-              <div className="flex flex-col gap-2 text-sm leading-relaxed text-mist-dim">
+              <div className="flex flex-col gap-2 text-sm leading-relaxed text-mist-dim lg:text-base">
                 <p className="font-display text-base font-semibold text-mist">
                   {/* TODO: replace with your name */}
                   Your Name

@@ -34,18 +34,25 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg-base px-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-bg-base px-4 py-12">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 flex items-center justify-center"
+      >
+        <div className="h-[60vmin] w-[60vmin] rounded-full bg-signal/10 blur-[120px]" />
+      </div>
+
+      <div className="relative w-full max-w-md">
         {/* Brand */}
         <div className="mb-8 flex flex-col items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center border border-circuit bg-bg-panel">
+          <div className="flex h-14 w-14 items-center justify-center border border-circuit bg-bg-panel lg:h-16 lg:w-16">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth={1.75}
-              className="h-7 w-7 text-signal"
+              className="h-7 w-7 text-signal lg:h-8 lg:w-8"
             >
               <path
                 strokeLinecap="round"
@@ -59,7 +66,7 @@ export default function LoginPage() {
               />
             </svg>
           </div>
-          <h1 className="font-display text-2xl font-bold uppercase tracking-tight text-mist">
+          <h1 className="font-display text-2xl font-bold uppercase tracking-tight text-mist lg:text-3xl">
             PhishGuard
           </h1>
           <p className="max-w-xs text-center text-sm text-mist-dim">

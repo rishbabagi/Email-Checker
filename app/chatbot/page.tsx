@@ -75,18 +75,25 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-base">
-      <div className="mx-auto flex h-screen max-w-2xl flex-col p-4">
+    <div className="relative min-h-screen overflow-hidden bg-bg-base">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 flex items-center justify-center"
+      >
+        <div className="h-[60vmin] w-[60vmin] rounded-full bg-signal/10 blur-[120px]" />
+      </div>
+
+      <div className="relative mx-auto flex h-screen max-w-2xl flex-col p-4 lg:max-w-3xl lg:p-6 xl:max-w-4xl">
         {/* Header */}
-        <div className="mb-4 flex items-center gap-3 pt-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-circuit bg-bg-panel">
+        <div className="mb-4 flex items-center gap-3 pt-4 lg:mb-6">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-circuit bg-bg-panel lg:h-12 lg:w-12">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth={1.75}
-              className="h-5 w-5 text-signal"
+              className="h-5 w-5 text-signal lg:h-6 lg:w-6"
             >
               <path
                 strokeLinecap="round"
@@ -101,17 +108,17 @@ export default function ChatbotPage() {
             </svg>
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold uppercase tracking-tight text-mist">
+            <h1 className="font-display text-xl font-bold uppercase tracking-tight text-mist lg:text-2xl">
               PhishGuard Assistant
             </h1>
-            <p className="font-mono text-xs text-mist-dim">
+            <p className="font-mono text-xs text-mist-dim lg:text-sm">
               Ask about a suspicious email and get a security assessment
             </p>
           </div>
         </div>
 
         {/* Messages Container */}
-        <div className="scan-panel mb-4 flex-1 space-y-4 overflow-y-auto p-4">
+        <div className="scan-panel mb-4 flex-1 space-y-4 overflow-y-auto p-4 lg:p-6">
           {messages.length === 0 && !error && (
             <div className="flex h-full items-center justify-center text-sm text-mist-dim">
               <p>Paste an email or describe what looks suspicious to begin.</p>
@@ -128,8 +135,8 @@ export default function ChatbotPage() {
               <div
                 className={
                   message.role === "user"
-                    ? "max-w-xs bg-signal px-4 py-3 text-bg-base lg:max-w-md"
-                    : "scan-panel max-w-xs px-4 py-3 text-mist lg:max-w-md"
+                    ? "max-w-xs bg-signal px-4 py-3 text-bg-base lg:max-w-md xl:max-w-lg"
+                    : "scan-panel max-w-xs px-4 py-3 text-mist lg:max-w-md xl:max-w-lg"
                 }
               >
                 {message.role === "assistant" && (
@@ -175,19 +182,19 @@ export default function ChatbotPage() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your message..."
             disabled={isLoading}
-            className="flex-1 border border-circuit bg-bg-panel px-4 py-2 text-sm text-mist outline-none transition-colors placeholder:text-mist-dim/60 focus:border-signal focus:ring-1 focus:ring-signal disabled:opacity-60"
+            className="flex-1 border border-circuit bg-bg-panel px-4 py-2 text-sm text-mist outline-none transition-colors placeholder:text-mist-dim/60 focus:border-signal focus:ring-1 focus:ring-signal disabled:opacity-60 lg:py-2.5 lg:text-base"
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="scan-btn bg-signal px-6 py-2 font-mono text-sm font-medium uppercase tracking-wide text-bg-base transition-colors hover:bg-signal/90 disabled:cursor-not-allowed disabled:bg-circuit disabled:text-mist-dim"
+            className="scan-btn bg-signal px-6 py-2 font-mono text-sm font-medium uppercase tracking-wide text-bg-base transition-colors hover:bg-signal/90 disabled:cursor-not-allowed disabled:bg-circuit disabled:text-mist-dim lg:px-8 lg:py-2.5"
           >
             Send
           </button>
           <button
             type="button"
             onClick={clearChat}
-            className="border border-circuit bg-bg-panel px-4 py-2 font-mono text-sm uppercase tracking-wide text-mist-dim transition-colors hover:border-signal hover:text-signal"
+            className="border border-circuit bg-bg-panel px-4 py-2 font-mono text-sm uppercase tracking-wide text-mist-dim transition-colors hover:border-signal hover:text-signal lg:px-5 lg:py-2.5"
           >
             Clear
           </button>
