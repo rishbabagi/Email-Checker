@@ -61,7 +61,7 @@ export default function NavMenu() {
         onClick={() => setMenuOpen((open) => !open)}
         aria-expanded={menuOpen}
         aria-label="Open menu"
-        className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-700 bg-slate-900/60 text-slate-300 backdrop-blur-sm transition-colors hover:border-emerald-500 hover:text-emerald-400"
+        className="flex h-10 w-10 items-center justify-center border border-circuit bg-bg-panel/70 text-mist-dim backdrop-blur-sm transition-colors hover:border-signal hover:text-signal"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -79,28 +79,34 @@ export default function NavMenu() {
         </svg>
       </button>
 
-      {menuOpen && (
-        <div className="absolute right-0 mt-2 w-44 overflow-hidden rounded-lg border border-slate-800 bg-slate-900/95 shadow-2xl shadow-black/50 backdrop-blur-sm">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMenuOpen(false)}
-              className="block px-4 py-2.5 text-sm text-slate-300 transition-colors hover:bg-slate-800 hover:text-emerald-400"
-            >
-              {link.label}
-            </Link>
-          ))}
-          {isAuthed && (
-            <button
-              onClick={handleLogout}
-              className="block w-full px-4 py-2.5 text-left text-sm text-slate-300 transition-colors hover:bg-slate-800 hover:text-emerald-400"
-            >
-              Log out
-            </button>
-          )}
-        </div>
-      )}
+      <div
+        aria-hidden={!menuOpen}
+        inert={!menuOpen}
+        className={`scan-panel absolute right-0 mt-2 w-44 origin-top overflow-hidden transition-[clip-path,opacity] duration-300 ease-out ${
+          menuOpen
+            ? "opacity-100 [clip-path:inset(0_0_0_0)]"
+            : "pointer-events-none opacity-0 [clip-path:inset(0_0_100%_0)]"
+        }`}
+      >
+        {links.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={() => setMenuOpen(false)}
+            className="block border-t border-circuit px-4 py-2.5 font-mono text-xs uppercase tracking-wider text-mist-dim transition-colors first:border-t-0 hover:bg-signal/5 hover:text-signal"
+          >
+            {link.label}
+          </Link>
+        ))}
+        {isAuthed && (
+          <button
+            onClick={handleLogout}
+            className="block w-full border-t border-circuit px-4 py-2.5 text-left font-mono text-xs uppercase tracking-wider text-mist-dim transition-colors hover:bg-signal/5 hover:text-signal"
+          >
+            Log out
+          </button>
+        )}
+      </div>
     </div>
   );
 }
