@@ -2,90 +2,46 @@ import ScanReveal from "../components/ScanReveal";
 
 export default function AboutPage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-bg-base px-4 py-16 lg:py-24">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 flex items-start justify-center"
-      >
-        <div className="mt-[-10vmin] h-[60vmin] w-[60vmin] rounded-full bg-signal/10 blur-[120px]" />
-      </div>
-
-      <div className="relative mx-auto flex max-w-2xl flex-col gap-8 lg:max-w-3xl lg:gap-10">
+    <div className="min-h-screen bg-bg-base px-4 py-16 lg:py-24">
+      <div className="mx-auto flex max-w-2xl flex-col gap-8">
         {/* Brand */}
         <div className="mb-4 flex flex-col items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center border border-circuit bg-bg-panel lg:h-16 lg:w-16">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.75}
-              className="h-7 w-7 text-signal lg:h-8 lg:w-8"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 2.5 4.5 5.75v5.5c0 5.2 3.2 8.9 7.5 10.25 4.3-1.35 7.5-5.05 7.5-10.25v-5.5L12 2.5Z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m9 12.25 2.1 2.1L15.5 10"
-              />
-            </svg>
-          </div>
-          <h1 className="font-display text-2xl font-bold uppercase tracking-tight text-mist lg:text-3xl">
-            About Us
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.1}
+            className="h-9 w-9 text-mist"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 2.5 4.5 5.75v5.5c0 5.2 3.2 8.9 7.5 10.25 4.3-1.35 7.5-5.05 7.5-10.25v-5.5L12 2.5Z"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m9 12.25 2.1 2.1L15.5 10"
+            />
+          </svg>
+          <h1 className="font-display text-2xl font-semibold text-mist lg:text-3xl">
+            About the Founder
           </h1>
         </div>
 
-        {/* About the project */}
         <ScanReveal>
-          <section className="scan-panel p-8 lg:p-10">
-            <p className="mb-4 font-mono text-xs uppercase tracking-wider text-signal lg:text-sm">
-              About PhishGuard
-            </p>
-            <div className="flex flex-col gap-4 text-sm leading-relaxed text-mist-dim lg:text-base">
-              <p>
-                Phishing emails are getting harder to spot. Attackers spoof
-                trusted domains, mimic real companies, and use urgency to
-                pressure people into clicking links or handing over
-                credentials — and traditional spam filters don&apos;t
-                always catch them.
-              </p>
-              <p>
-                PhishGuard gives anyone a quick way to check a suspicious
-                email before acting on it. Paste in the message or describe
-                what looks off, and get an instant assessment of the
-                warning signs — no security background required.
-              </p>
-              <p>
-                {/* TODO: update once real detection logic is added */}
-                This project is under active development. The goal is a
-                lightweight, conversational tool that closes the gap
-                between &quot;something feels off about this email&quot;
-                and actually knowing whether it&apos;s safe.
-              </p>
-            </div>
-          </section>
-        </ScanReveal>
-
-        {/* About the founder */}
-        <ScanReveal>
-          <section className="scan-panel p-8 lg:p-10">
-            <p className="mb-4 font-mono text-xs uppercase tracking-wider text-signal lg:text-sm">
-              About the Founder
-            </p>
-            <div className="flex items-start gap-4 lg:gap-5">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-circuit bg-bg-base text-xl font-semibold text-mist-dim lg:h-20 lg:w-20 lg:text-2xl">
+          <section className="card p-8 lg:p-10">
+            <div className="flex items-start gap-5">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-border bg-bg-base text-xl font-semibold text-mist-dim lg:h-20 lg:w-20 lg:text-2xl">
                 ?
               </div>
               <div className="flex flex-col gap-2 text-sm leading-relaxed text-mist-dim lg:text-base">
-                <p className="font-display text-base font-semibold text-mist">
+                <p className="font-display text-lg font-semibold text-mist">
                   {/* TODO: replace with your name */}
                   Your Name
                 </p>
-                <p className="font-mono text-xs uppercase tracking-wide text-mist-dim">
+                <p className="font-mono text-xs uppercase tracking-wide text-accent">
                   {/* TODO: replace with your role/title */}
                   Founder &amp; Developer
                 </p>
@@ -96,15 +52,15 @@ export default function AboutPage() {
                   building PhishGuard.
                 </p>
                 <div className="mt-1 flex gap-4 text-xs">
-                  <a href="#" className="text-signal hover:text-mist">
+                  <a href="#" className="text-accent hover:underline">
                     {/* TODO: link your email/contact */}
                     Contact
                   </a>
-                  <a href="#" className="text-signal hover:text-mist">
+                  <a href="#" className="text-accent hover:underline">
                     {/* TODO: link your GitHub */}
                     GitHub
                   </a>
-                  <a href="#" className="text-signal hover:text-mist">
+                  <a href="#" className="text-accent hover:underline">
                     {/* TODO: link your LinkedIn */}
                     LinkedIn
                   </a>

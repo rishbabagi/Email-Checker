@@ -30,8 +30,7 @@ export default function ScanReveal({
   }, []);
 
   return (
-    <div ref={ref} className={`scan-reveal ${className}`}>
-      <div className="sweep" />
+    <div ref={ref} className={`reveal ${className}`}>
       {children}
     </div>
   );
