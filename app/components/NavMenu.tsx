@@ -56,7 +56,36 @@ export default function NavMenu() {
     : [...baseLinks, { href: "/login", label: "Login" }];
 
   return (
-    <div ref={menuRef} className="fixed right-6 top-6 z-50">
+    <>
+      <Link
+        href="/"
+        className="fixed left-6 top-6 z-50 flex items-center gap-2 text-mist transition-opacity hover:opacity-80"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.25}
+          className="h-6 w-6 text-accent"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 2.5 4.5 5.75v5.5c0 5.2 3.2 8.9 7.5 10.25 4.3-1.35 7.5-5.05 7.5-10.25v-5.5L12 2.5Z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="m9 12.25 2.1 2.1L15.5 10"
+          />
+        </svg>
+        <span className="font-mono text-sm font-semibold uppercase tracking-wide">
+          PhishGuard
+        </span>
+      </Link>
+
+      <div ref={menuRef} className="fixed right-6 top-6 z-50">
       <button
         onClick={() => setMenuOpen((open) => !open)}
         aria-expanded={menuOpen}
@@ -107,6 +136,7 @@ export default function NavMenu() {
           </button>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }

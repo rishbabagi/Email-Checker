@@ -51,12 +51,15 @@ export default function Home() {
           />
         </svg>
 
-        <h1
-          className="font-display max-w-2xl text-5xl font-semibold leading-[1.1] text-mist sm:text-6xl lg:text-7xl"
+        <h1 className="font-mono text-4xl font-bold uppercase tracking-wide text-mist sm:text-5xl lg:text-6xl">
+          PhishGuard
+        </h1>
+        <p
+          className="mt-4 max-w-xl font-display text-2xl font-semibold leading-tight text-mist sm:text-3xl lg:text-4xl"
           style={{ textWrap: "balance" }}
         >
           Spot phishing before it catches you
-        </h1>
+        </p>
         <p className="mt-5 max-w-md text-base text-mist-dim sm:text-lg">
           Paste a suspicious email and get an instant, plain-language
           security assessment.
