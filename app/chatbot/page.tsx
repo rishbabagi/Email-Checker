@@ -7,26 +7,22 @@ interface Message {
   content: string;
 }
 
-const SUGGESTIONS = [
+const TEST_EMAIL =
+  "Subject: Your PayPal account has been limited\n\nDear Customer,\n\nWe've noticed unusual activity on your account. Your access has been limited until we hear from you. Please confirm your identity within 24 hours by clicking the link below, or your account will be permanently suspended.\n\nConfirm Now: http://paypal-account-verify-secure.com\n\nThank you,\nPayPal Support Team";
+
+const STARTERS = [
   {
-    label: "Suspicious PayPal email",
+    label: "I think I got a scam email",
     message:
-      "Subject: Your PayPal account has been limited\n\nDear Customer,\n\nWe've noticed unusual activity on your account. Your access has been limited until we hear from you. Please confirm your identity within 24 hours by clicking the link below, or your account will be permanently suspended.\n\nConfirm Now: http://paypal-account-verify-secure.com\n\nThank you,\nPayPal Support Team",
+      "Hey, I got an email and I think it might be a scam. Can you help me check it?",
   },
   {
-    label: "Fake delivery notice",
-    message:
-      "Subject: Delivery Failed - Action Required\n\nHi,\n\nWe attempted to deliver your package today but were unable to complete delivery. To reschedule, please confirm your address and pay a small redelivery fee of $1.99 here: http://usps-redelivery-track.net\n\nIf you do not respond within 48 hours, your package will be returned to sender.\n\nUSPS Delivery Team",
+    label: "What should I send you?",
+    message: "What information should I give you to check an email?",
   },
   {
-    label: "Account suspension warning",
-    message:
-      "Subject: Immediate Action Required: Your Account Will Be Closed\n\nDear User,\n\nOur security team detected a login attempt from an unrecognized device. To prevent your account from being permanently closed, please verify your password and security questions immediately at the link below.\n\nVerify Account: http://secure-login-verification.info\n\nFailure to verify within 12 hours will result in permanent suspension.\n\nSecurity Department",
-  },
-  {
-    label: "Prize / lottery scam",
-    message:
-      "Subject: Congratulations! You've Won $1,000,000\n\nDear Winner,\n\nYou have been selected as the winner of our International Email Lottery. To claim your prize, please reply with your full name, address, phone number, and a copy of your ID.\n\nClaim your winnings by contacting our claims agent at claims@intl-lottery-winnings.com\n\nBest regards,\nInternational Lottery Commission",
+    label: "How do I spot phishing?",
+    message: "What are the warning signs of a phishing email?",
   },
 ];
 
@@ -70,17 +66,77 @@ export default function ChatbotPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get response from chatbot");
+        const data = await response.json().catch(() => null);
+        throw new Error(
+          data?.error || `Failed to get response from chatbot (${response.status})`
+        );
       }
 
-      const data = await response.json();
+      if (!response.body) {
+        throw new Error("No response stream received");
+      }
 
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: data.message,
-      };
+      // Groq responds fast enough that raw chunks can arrive almost all at
+      // once. Buffer the incoming text and reveal it at a steady, readable
+      // pace so it visibly flows in rather than popping in as one block.
+      await new Promise<void>((resolve, reject) => {
+        const reader = response.body!.getReader();
+        const decoder = new TextDecoder();
 
-      setMessages((prev) => [...prev, assistantMessage]);
+        let fullText = "";
+        let revealedLength = 0;
+        let networkDone = false;
+        let started = false;
+        let timer: ReturnType<typeof setTimeout> | null = null;
+
+        const reveal = () => {
+          if (revealedLength < fullText.length) {
+            revealedLength = Math.min(fullText.length, revealedLength + 3);
+            const visible = fullText.slice(0, revealedLength);
+
+            if (!started) {
+              started = true;
+              setMessages((prev) => [
+                ...prev,
+                { role: "assistant", content: visible },
+              ]);
+            } else {
+              setMessages((prev) => {
+                const updated = [...prev];
+                updated[updated.length - 1] = {
+                  ...updated[updated.length - 1],
+                  content: visible,
+                };
+                return updated;
+              });
+            }
+          }
+
+          if (revealedLength >= fullText.length && networkDone) {
+            resolve();
+          } else {
+            timer = setTimeout(reveal, 20);
+          }
+        };
+
+        (async () => {
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) {
+                networkDone = true;
+                break;
+              }
+              fullText += decoder.decode(value, { stream: true });
+            }
+          } catch (err) {
+            if (timer) clearTimeout(timer);
+            reject(err);
+          }
+        })();
+
+        reveal();
+      });
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred";
@@ -135,20 +191,28 @@ export default function ChatbotPage() {
         </div>
 
         {/* Suggestions */}
-        {messages.length === 0 && (
-          <div className="mb-4 flex flex-wrap gap-2">
-            {SUGGESTIONS.map((s) => (
-              <button
-                key={s.label}
-                type="button"
-                onClick={() => submitMessage(s.message)}
-                className="rounded-full border border-border bg-card px-3.5 py-1.5 text-xs text-mist-dim transition-colors hover:border-accent hover:text-mist"
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => submitMessage(TEST_EMAIL)}
+            disabled={isLoading}
+            className="rounded-full bg-accent px-3.5 py-1.5 font-mono text-xs font-semibold uppercase tracking-wide text-bg-base transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Test with a sample email
+          </button>
+          <span className="mx-1 h-4 w-px bg-border" />
+          {STARTERS.map((s) => (
+            <button
+              key={s.label}
+              type="button"
+              onClick={() => submitMessage(s.message)}
+              disabled={isLoading}
+              className="rounded-full border border-border bg-card px-3.5 py-1.5 text-xs text-mist-dim transition-colors hover:border-accent hover:text-mist disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
 
         {/* Messages Container */}
         <div className="card mb-4 flex-1 space-y-4 overflow-y-auto p-4 lg:p-6">
@@ -179,7 +243,7 @@ export default function ChatbotPage() {
             </div>
           ))}
 
-          {isLoading && (
+          {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
             <div className="flex justify-start">
               <div className="rounded-2xl border border-border bg-bg-base px-4 py-3 text-mist">
                 <div className="flex space-x-2">

@@ -27,7 +27,7 @@ WHAT I FOUND:
 WHAT TO DO:
 (One or two sentences of clear, practical advice - e.g. don't click the link, verify by contacting the company directly through their official website, or that it looks safe to proceed.)
 
-If the user hasn't pasted an email yet and is just greeting you or asking a general question, don't use the structured format - respond conversationally, briefly explain what you do, and invite them to paste the suspicious email or describe what looked off. You can also answer general questions about phishing tactics and online safety in plain conversational language.
+If the user hasn't pasted an email yet and is just greeting you, describing a vague concern ("I think I got a scam email"), or asking a general question, don't use the structured format - respond conversationally instead. When they describe a concern but haven't shared the actual email, ask them to send: the full email text, the sender's email address (not just the display name, since that's what reveals a spoofed domain), and any links it contains - explain briefly why those details help. You can also answer general questions about phishing tactics and online safety in plain conversational language.
 
 Stay strictly on topic. You only help with email safety, phishing, scams, and online security. If the user asks something unrelated - general knowledge, weather, math, coding help, casual chit-chat, or anything else outside that scope - do not answer it. Politely say that you're built specifically to help spot phishing and suspicious emails, and invite them to paste an email or ask a security-related question instead.
 
@@ -55,16 +55,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await groq.chat.completions.create({
+    const groqStream = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant",
       messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
       max_tokens: 1024,
       temperature: 0.4,
+      stream: true,
     });
 
-    const assistantMessage = response.choices[0].message.content;
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of groqStream) {
+            const text = chunk.choices[0]?.delta?.content || "";
+            if (text) {
+              controller.enqueue(encoder.encode(text));
+            }
+          }
+        } catch (err) {
+          controller.error(err);
+        } finally {
+          controller.close();
+        }
+      },
+    });
 
-    return NextResponse.json({ message: assistantMessage });
+    return new Response(stream, {
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    });
   } catch (error) {
     console.error("Groq API error:", error);
 
