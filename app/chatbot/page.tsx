@@ -7,6 +7,29 @@ interface Message {
   content: string;
 }
 
+const SUGGESTIONS = [
+  {
+    label: "Suspicious PayPal email",
+    message:
+      "Subject: Your PayPal account has been limited\n\nDear Customer,\n\nWe've noticed unusual activity on your account. Your access has been limited until we hear from you. Please confirm your identity within 24 hours by clicking the link below, or your account will be permanently suspended.\n\nConfirm Now: http://paypal-account-verify-secure.com\n\nThank you,\nPayPal Support Team",
+  },
+  {
+    label: "Fake delivery notice",
+    message:
+      "Subject: Delivery Failed - Action Required\n\nHi,\n\nWe attempted to deliver your package today but were unable to complete delivery. To reschedule, please confirm your address and pay a small redelivery fee of $1.99 here: http://usps-redelivery-track.net\n\nIf you do not respond within 48 hours, your package will be returned to sender.\n\nUSPS Delivery Team",
+  },
+  {
+    label: "Account suspension warning",
+    message:
+      "Subject: Immediate Action Required: Your Account Will Be Closed\n\nDear User,\n\nOur security team detected a login attempt from an unrecognized device. To prevent your account from being permanently closed, please verify your password and security questions immediately at the link below.\n\nVerify Account: http://secure-login-verification.info\n\nFailure to verify within 12 hours will result in permanent suspension.\n\nSecurity Department",
+  },
+  {
+    label: "Prize / lottery scam",
+    message:
+      "Subject: Congratulations! You've Won $1,000,000\n\nDear Winner,\n\nYou have been selected as the winner of our International Email Lottery. To claim your prize, please reply with your full name, address, phone number, and a copy of your ID.\n\nClaim your winnings by contacting our claims agent at claims@intl-lottery-winnings.com\n\nBest regards,\nInternational Lottery Commission",
+  },
+];
+
 export default function ChatbotPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -22,14 +45,12 @@ export default function ChatbotPage() {
     scrollToBottom();
   }, [messages]);
 
-  const sendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (!input.trim()) return;
+  const submitMessage = async (text: string) => {
+    if (!text.trim() || isLoading) return;
 
     const userMessage: Message = {
       role: "user",
-      content: input,
+      content: text,
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -67,6 +88,11 @@ export default function ChatbotPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const sendMessage = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    submitMessage(input);
   };
 
   const clearChat = () => {
@@ -107,6 +133,22 @@ export default function ChatbotPage() {
             </p>
           </div>
         </div>
+
+        {/* Suggestions */}
+        {messages.length === 0 && (
+          <div className="mb-4 flex flex-wrap gap-2">
+            {SUGGESTIONS.map((s) => (
+              <button
+                key={s.label}
+                type="button"
+                onClick={() => submitMessage(s.message)}
+                className="rounded-full border border-border bg-card px-3.5 py-1.5 text-xs text-mist-dim transition-colors hover:border-accent hover:text-mist"
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Messages Container */}
         <div className="card mb-4 flex-1 space-y-4 overflow-y-auto p-4 lg:p-6">
