@@ -29,14 +29,59 @@ function GoogleIcon() {
   );
 }
 
+function EyeIcon({ open }: { open: boolean }) {
+  return open ? (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      className="h-4 w-4"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M2.25 12s3.75-7.5 9.75-7.5 9.75 7.5 9.75 7.5-3.75 7.5-9.75 7.5S2.25 12 2.25 12Z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 14.25a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Z"
+      />
+    </svg>
+  ) : (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      className="h-4 w-4"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.243L9.88 9.88"
+      />
+    </svg>
+  );
+}
+
 export default function AuthCard({ mode }: { mode: "signin" | "signup" }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [capsLockOn, setCapsLockOn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+
+  const checkCapsLock = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    setCapsLockOn(e.getModifierState("CapsLock"));
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -211,19 +256,42 @@ export default function AuthCard({ mode }: { mode: "signin" | "signup" }) {
                         </a>
                       )}
                     </div>
-                    <input
-                      id="password"
-                      type="password"
-                      required
-                      minLength={mode === "signup" ? 6 : undefined}
-                      autoComplete={
-                        mode === "signup" ? "new-password" : "current-password"
-                      }
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full rounded-lg border border-border bg-bg-base px-3 py-2.5 text-sm text-mist outline-none transition-colors placeholder:text-mist-dim/60 focus:border-accent"
-                    />
+                    <div className="relative">
+                      <input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        required
+                        minLength={mode === "signup" ? 6 : undefined}
+                        autoComplete={
+                          mode === "signup"
+                            ? "new-password"
+                            : "current-password"
+                        }
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        onKeyUp={checkCapsLock}
+                        onKeyDown={checkCapsLock}
+                        onBlur={() => setCapsLockOn(false)}
+                        placeholder="••••••••"
+                        className="w-full rounded-lg border border-border bg-bg-base px-3 py-2.5 pr-10 text-sm text-mist outline-none transition-colors placeholder:text-mist-dim/60 focus:border-accent"
+                      />
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        onMouseEnter={() => setShowPassword(true)}
+                        onMouseLeave={() => setShowPassword(false)}
+                        onTouchStart={() => setShowPassword(true)}
+                        onTouchEnd={() => setShowPassword(false)}
+                        onTouchCancel={() => setShowPassword(false)}
+                        aria-label="Hold or hover to reveal password"
+                        className="absolute right-0 top-0 flex h-full w-10 items-center justify-center text-mist-dim transition-colors hover:text-mist"
+                      >
+                        <EyeIcon open={showPassword} />
+                      </button>
+                    </div>
+                    {capsLockOn && (
+                      <p className="text-xs text-alert">Caps Lock is on</p>
+                    )}
                   </div>
 
                   {error && (

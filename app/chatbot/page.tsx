@@ -1,10 +1,34 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
+  imageUrl?: string;
+}
+
+type ContentPart =
+  | { type: "text"; text: string }
+  | { type: "image_url"; image_url: { url: string } };
+
+interface ApiMessage {
+  role: "user" | "assistant";
+  content: string | ContentPart[];
+}
+
+function toApiMessage(m: Message): ApiMessage {
+  if (m.imageUrl) {
+    const parts: ContentPart[] = [];
+    if (m.content.trim()) {
+      parts.push({ type: "text", text: m.content });
+    }
+    parts.push({ type: "image_url", image_url: { url: m.imageUrl } });
+    return { role: m.role, content: parts };
+  }
+  return { role: m.role, content: m.content };
 }
 
 const TEST_EMAIL =
@@ -29,9 +53,29 @@ const STARTERS = [
 export default function ChatbotPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isAuthed, setIsAuthed] = useState(false);
+  const [needsAuth, setNeedsAuth] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    supabase.auth.getUser().then(({ data }) => {
+      setIsAuthed(!!data.user);
+    });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setIsAuthed(!!session);
+      }
+    );
+
+    return () => subscription.subscription.unsubscribe();
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -41,18 +85,23 @@ export default function ChatbotPage() {
     scrollToBottom();
   }, [messages]);
 
-  const submitMessage = async (text: string) => {
-    if (!text.trim() || isLoading) return;
+  const submitMessage = async (text: string, imageUrl?: string) => {
+    if ((!text.trim() && !imageUrl) || isLoading) return;
 
     const userMessage: Message = {
       role: "user",
       content: text,
+      ...(imageUrl ? { imageUrl } : {}),
     };
+
+    const history = [...messages, userMessage];
 
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setPendingImage(null);
     setIsLoading(true);
     setError("");
+    setNeedsAuth(false);
 
     try {
       const response = await fetch("/api/chat", {
@@ -61,7 +110,7 @@ export default function ChatbotPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: [...messages, userMessage],
+          messages: history.map(toApiMessage),
         }),
       });
 
@@ -146,14 +195,38 @@ export default function ChatbotPage() {
     }
   };
 
+  const runGated = (action: () => void) => {
+    if (!isAuthed) {
+      setError("");
+      setNeedsAuth(true);
+      return;
+    }
+    setNeedsAuth(false);
+    action();
+  };
+
   const sendMessage = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    submitMessage(input);
+    runGated(() => submitMessage(input, pendingImage || undefined));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPendingImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const clearChat = () => {
     setMessages([]);
     setError("");
+    setNeedsAuth(false);
+    setPendingImage(null);
   };
 
   return (
@@ -185,7 +258,9 @@ export default function ChatbotPage() {
               PhishGuard Assistant
             </h1>
             <p className="text-xs text-mist-dim lg:text-sm">
-              Ask about a suspicious email and get a security assessment
+              {isAuthed
+                ? "Ask about a suspicious email and get a security assessment"
+                : "Try the sample email below, or sign in for full access"}
             </p>
           </div>
         </div>
@@ -205,7 +280,7 @@ export default function ChatbotPage() {
             <button
               key={s.label}
               type="button"
-              onClick={() => submitMessage(s.message)}
+              onClick={() => runGated(() => submitMessage(s.message))}
               disabled={isLoading}
               className="rounded-full border border-border bg-card px-3.5 py-1.5 text-xs text-mist-dim transition-colors hover:border-accent hover:text-mist disabled:cursor-not-allowed disabled:opacity-40"
             >
@@ -216,7 +291,7 @@ export default function ChatbotPage() {
 
         {/* Messages Container */}
         <div className="card mb-4 flex-1 space-y-4 overflow-y-auto p-4 lg:p-6">
-          {messages.length === 0 && !error && (
+          {messages.length === 0 && !error && !needsAuth && (
             <div className="flex h-full items-center justify-center text-sm text-mist-dim">
               <p>Paste an email or describe what looks suspicious to begin.</p>
             </div>
@@ -236,9 +311,19 @@ export default function ChatbotPage() {
                     : "max-w-xs rounded-2xl border border-border bg-bg-base px-4 py-3 text-mist lg:max-w-md"
                 }
               >
-                <p className="whitespace-pre-wrap text-sm">
-                  {message.content}
-                </p>
+                {message.imageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={message.imageUrl}
+                    alt="Attached email screenshot"
+                    className="mb-2 max-h-48 w-full rounded-lg object-cover"
+                  />
+                )}
+                {message.content && (
+                  <p className="whitespace-pre-wrap text-sm">
+                    {message.content}
+                  </p>
+                )}
               </div>
             </div>
           ))}
@@ -255,6 +340,22 @@ export default function ChatbotPage() {
             </div>
           )}
 
+          {needsAuth && (
+            <div className="flex justify-center">
+              <div className="flex flex-col items-center gap-3 rounded-lg border border-accent/30 bg-accent/5 px-5 py-4 text-center">
+                <p className="text-sm text-mist">
+                  Please sign in to use this feature.
+                </p>
+                <Link
+                  href="/login"
+                  className="rounded-lg bg-accent px-5 py-2 font-mono text-xs font-semibold uppercase tracking-wide text-bg-base transition-opacity hover:opacity-90"
+                >
+                  Sign In
+                </Link>
+              </div>
+            </div>
+          )}
+
           {error && (
             <div className="flex justify-center">
               <div className="rounded-lg border border-alert/30 bg-alert/10 px-4 py-3 text-alert">
@@ -266,8 +367,70 @@ export default function ChatbotPage() {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Pending image preview */}
+        {pendingImage && (
+          <div className="mb-2 flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={pendingImage}
+              alt="Selected screenshot preview"
+              className="h-10 w-10 rounded object-cover"
+            />
+            <span className="flex-1 text-xs text-mist-dim">
+              Screenshot attached
+            </span>
+            <button
+              type="button"
+              onClick={() => setPendingImage(null)}
+              className="text-xs text-mist-dim transition-colors hover:text-mist"
+            >
+              Remove
+            </button>
+          </div>
+        )}
+
         {/* Input Form */}
         <form onSubmit={sendMessage} className="flex gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => runGated(() => fileInputRef.current?.click())}
+            disabled={isLoading}
+            aria-label="Attach a screenshot"
+            title="Attach a screenshot"
+            className="flex items-center justify-center rounded-lg border border-border bg-card px-3 text-mist-dim transition-colors hover:border-accent hover:text-mist disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              className="h-5 w-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3 6.75A2.25 2.25 0 0 1 5.25 4.5h13.5A2.25 2.25 0 0 1 21 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 17.25V6.75Z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m3.75 16.5 4.72-4.72a1.5 1.5 0 0 1 2.12 0l2.91 2.91a1.5 1.5 0 0 0 2.12 0l1.66-1.66a1.5 1.5 0 0 1 2.12 0l2.6 2.6"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 8.25h.008v.008h-.008V8.25Z"
+              />
+            </svg>
+          </button>
           <input
             type="text"
             value={input}
@@ -278,7 +441,7 @@ export default function ChatbotPage() {
           />
           <button
             type="submit"
-            disabled={isLoading || !input.trim()}
+            disabled={isLoading || (!input.trim() && !pendingImage)}
             className="rounded-lg bg-accent px-6 py-2 font-mono text-xs font-semibold uppercase tracking-wide text-bg-base transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 lg:px-8 lg:py-2.5"
           >
             Send

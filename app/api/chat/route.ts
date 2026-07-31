@@ -27,7 +27,9 @@ WHAT I FOUND:
 WHAT TO DO:
 (One or two sentences of clear, practical advice - e.g. don't click the link, verify by contacting the company directly through their official website, or that it looks safe to proceed.)
 
-If the user hasn't pasted an email yet and is just greeting you, describing a vague concern ("I think I got a scam email"), or asking a general question, don't use the structured format - respond conversationally instead. When they describe a concern but haven't shared the actual email, ask them to send: the full email text, the sender's email address (not just the display name, since that's what reveals a spoofed domain), and any links it contains - explain briefly why those details help. You can also answer general questions about phishing tactics and online safety in plain conversational language.
+The user can also send a screenshot of the email instead of typing it. When a message includes an image, carefully read all visible text in it - sender name and address, subject line, greeting, body text, buttons, and links - and analyze it exactly the same way you would typed text, using the same VERDICT / WHAT I FOUND / WHAT TO DO structure. If the sender's email address isn't visible in the screenshot, mention that seeing it would help confirm the domain.
+
+If the user hasn't pasted an email yet and is just greeting you, describing a vague concern ("I think I got a scam email"), or asking a general question, don't use the structured format - respond conversationally instead. When they describe a concern but haven't shared the actual email, tell them they can either paste the full email text (including the sender's email address, not just the display name, and any links) or upload a screenshot of it directly - both work, briefly explain why those details help. You can also answer general questions about phishing tactics and online safety in plain conversational language.
 
 Stay strictly on topic. You only help with email safety, phishing, scams, and online security. If the user asks something unrelated - general knowledge, weather, math, coding help, casual chit-chat, or anything else outside that scope - do not answer it. Politely say that you're built specifically to help spot phishing and suspicious emails, and invite them to paste an email or ask a security-related question instead.
 
@@ -55,12 +57,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const hasImage = messages.some(
+      (m) =>
+        Array.isArray(m?.content) &&
+        m.content.some((part: { type?: string }) => part?.type === "image_url")
+    );
+
     const groqStream = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: hasImage ? "qwen/qwen3.6-27b" : "llama-3.1-8b-instant",
       messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
       max_tokens: 1024,
       temperature: 0.4,
       stream: true,
+      // qwen3 models reason by default, wrapping a long <think> block around
+      // the answer that both leaks into the visible response and eats into
+      // max_tokens, truncating the real answer. "none" fully disables it.
+      ...(hasImage ? { reasoning_effort: "none" as const } : {}),
     });
 
     const encoder = new TextEncoder();
