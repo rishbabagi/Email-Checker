@@ -1,3 +1,10 @@
+Phishing Email Checker
+
+A tool that helps users spot phishing and scam emails before they fall for them.
+Paste in or load an email, and the app analyzes it for common warning signs like
+spoofed or suspicious senders, deceptive links, and urgent or manipulative wording.
+It then tells you whether the message looks safe or suspicious.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
